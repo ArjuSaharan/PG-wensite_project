@@ -1,0 +1,23 @@
+import jwt from 'jsonwebtoken'
+import "dotenv/config"
+
+const userAuth=async(req,res,next)=>{
+    console.log("cookies");
+    const {token}=req.cookies;
+    if(!token){
+        return res.json({success:false,message:"not authorizes"});
+    }
+    try{
+        const tokenDecode=jwt.verify(token,process.env.JWT_SECRET);
+        if(!tokenDecode){
+            return res.json({success:false,message:"invalid token"})
+        }
+        req.userId=tokenDecode.id;
+        next();
+    }
+    catch(error){
+        return res.json({success:false,message:error.message});
+    }
+}
+
+export default userAuth;
