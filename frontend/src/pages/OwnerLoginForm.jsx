@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { FaUser } from 'react-icons/fa'
 import { MdOutlineMail } from "react-icons/md";
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { FaPhoneAlt } from "react-icons/fa";
 import { RiLockPasswordLine } from "react-icons/ri";
 import { useContext } from 'react';
@@ -19,7 +19,7 @@ const OwnerLoginForm = () => {
         confirmPassword: ""
     })
     const { backendUrl, getuserdata, isLoggedin, setisLoggin
-        , ownerdata, setownerData, getownerdata } = useContext(AppConetxt);
+        , ownerdata, setownerData, getownerdata,setowner } = useContext(AppConetxt);
     const handleChange = (e) => {
         setformdata({
             ...formdata,
@@ -40,11 +40,14 @@ const OwnerLoginForm = () => {
                 password: formdata.password,
                 confirmPassword: formdata.confirmPassword
             }, { withCredentials: true });
+            console.log(data);
             if (data.success) {
+                setowner(data.success);
                 toast.success(data.message);
+                  await getownerdata();
                 setisLoggin(true),
-                    getownerdata();
-                navigate('/ownerDashbord')
+              
+                navigate('/ownerDashbord',{replace:true})
             }
         }
         catch (error) {
@@ -59,9 +62,10 @@ const OwnerLoginForm = () => {
         },{withCredentials:true});
         if(data.success){
             toast.success(data.message);
-                setisLoggin(true),
-                    getownerdata();
-                navigate('/ownerDashbord')
+            setowner(data.success);
+            setisLoggin(true);
+            getownerdata();
+            navigate('/ownerDashbord',{replace:true})
         }
         }
         catch(error){
@@ -87,12 +91,12 @@ const OwnerLoginForm = () => {
 
 
                 {/* from div */}
-                <div className='flex flex-col gap-1'>
-                    <form onClick={handleSubmit}>
+                <div className='flex flex-col gap-2 mb-2'>
+                    <form onSubmit={handleSubmit}>
                         {
                             state !== "Login" && (
 
-                                <div className='flex border-1 rounded border-gray-200'>
+                                <div className='flex border-1 rounded border-gray-200 mb-3'>
                                     <div className='p-4'>
                                         <FaUser className='h-10 w-10 bg-violet-100 text-violet-800 rounded px-3' />
                                     </div>
@@ -103,14 +107,14 @@ const OwnerLoginForm = () => {
                                             value={formdata.fullName}
                                             onChange={handleChange}
                                             required
-                                            placeholder='enter your name' className='text-base w-full bg-transparent text-sm  placeholder:text-gray-400 hover:border-1 p-2  rounded' />
+                                            placeholder='enter your name' className=' outline-none w-full bg-transparent text-sm  placeholder:text-gray-400 hover:border-1 p-2  rounded ' />
                                     </div>
 
                                 </div>
                             )
                         }
 
-                        <div className='flex border-1 rounded border-gray-200'>
+                        <div className='flex border-1 rounded border-gray-200 mb-3'>
                             <div className='p-4'>
                                 <MdOutlineMail className='h-10 w-10 bg-violet-100 font-bold text-violet-800 rounded px-3' />
                             </div>
@@ -129,7 +133,7 @@ const OwnerLoginForm = () => {
 
                         {
                             state !== "Login" && (
-                                <div className='flex border-1 rounded border-gray-200'>
+                                <div className='flex border-1 rounded border-gray-200 mb-3'>
                                     <div className='p-4'>
                                         <FaPhoneAlt className='h-10 w-10 bg-violet-100 text-violet-800 rounded px-3' />
                                     </div>
@@ -148,7 +152,7 @@ const OwnerLoginForm = () => {
                         }
 
 
-                        <div className='flex border-1 rounded border-gray-200'>
+                        <div className='flex border-1 rounded border-gray-200 mb-3'>
                             <div className='p-4'>
                                 <RiLockPasswordLine className='h-10 w-10 bg-violet-100 text-violet-800 rounded px-3' />
                             </div>
@@ -160,33 +164,23 @@ const OwnerLoginForm = () => {
                                     onChange={handleChange}
                                     required
                                     placeholder='create  your password' className='text-base w-full bg-transparent text-sm  placeholder:text-gray-400 hover:border-1 p-2  rounded' />
-                                {/* password validator */}
-                                {/* Show validation only after user starts typing */}
                                 {formdata.password.length > 0 && (
                                     <div className="text-sm mt-2 ml-2">
-
-                                        {/* Length */}
                                         {formdata.password.length < 8 && (
                                             <p className="text-red-600">
                                                 ✗ At least 8 characters
                                             </p>
                                         )}
-
-                                        {/* Uppercase */}
                                         {!/[A-Z]/.test(formdata.password) && (
                                             <p className="text-red-600">
                                                 ✗ One uppercase letter
                                             </p>
                                         )}
-
-                                        {/* Number */}
                                         {!/[0-9]/.test(formdata.password) && (
                                             <p className="text-red-600">
                                                 ✗ One number
                                             </p>
                                         )}
-
-                                        {/* Special character */}
                                         {!/[@$!%*?&]/.test(formdata.password) && (
                                             <p className="text-red-600">
                                                 ✗ One special character
@@ -200,7 +194,7 @@ const OwnerLoginForm = () => {
                         </div>
                         {
                             state !== "Login" && (
-                                <div className='flex border-1 rounded border-gray-200'>
+                                <div className='flex border-1 rounded border-gray-200 mb-3'>
                                     <div className='p-4'>
                                         <RiLockPasswordLine className='h-10 w-10 bg-violet-100 text-violet-800 rounded px-3' />
                                     </div>
@@ -221,16 +215,16 @@ const OwnerLoginForm = () => {
                         <div className='flex border-1 items-center justify-center rounded border-gray-200 p-5 bg-violet-700'>
                             <button type="submit"
                                 className='text-center font-bold text-lg text-white '>
-                                {state === "login" ? "Login" : "Sign up"}
+                                {state === "Login" ? "Login" : "Sign up"}
                             </button>
                         </div>
 
                     </form>
                     <div className='flex items-center justify-center rounded '>
-                        <p onClick={() => setstate(prev => prev === "login" ? "register" : "login")}
+                        <p onClick={() => setstate(prev => prev === "Login" ? "Sign up" : "Login")}
                             className='text-gray-600 text-sm mt-3 mb-11 cursor-pointer'
                         >
-                            {state === "login"
+                            {state === "Login"
                                 ? "Don't have an account?"
                                 : "Already have an account?"
                             }  <span className='text-violet-600 ml-1'>

@@ -1,6 +1,7 @@
 import express from 'express'
 import { ownerLogin, ownerLogout, ownerregister } from '../controller/ownerlogin.js';
 import userAuth from '../middleware/userAuth.js'
+import ownerAuth from '../middleware/ownerAuth.js'
 import { getownerdata } from '../models/ownerdata.js';
 const router=express.Router();
 

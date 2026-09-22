@@ -16,14 +16,14 @@ const Login = () => {
     email:"",
     password:"",
   })
-  const {backendUrl,getuserdata,setisLoggin,userData,setuserData}=useContext(AppConetxt);
+  const {backendUrl,getuserdata,setisLoggin,userData,setuserData,setuser}=useContext(AppConetxt);
   const navigate=useNavigate();
   const handleSubmit=async(e)=>{
     e.preventDefault();
     try{
       console.log(formData.email);
       if(state==="register"){
-      const {data}=await axios.put(backendUrl+'/pg/user/register',{
+      const {data}=await axios.post(backendUrl+'/pg/user/register',{
         name:formData.name,
         email:formData.email,
         password:formData.password
@@ -31,9 +31,12 @@ const Login = () => {
         withCredentials:true,
       })
       if(data.success){
+        setuser(data.success);
         setisLoggin(true);
         getuserdata();
-        navigate('/user');
+        navigate('/user',{
+          replace:true
+        });
       }
       else{
         toast.error(data.message)

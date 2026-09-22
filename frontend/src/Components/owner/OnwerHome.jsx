@@ -4,9 +4,11 @@ import OwnerNavbar from '../../ownerpage/OwnerNavbar'
 // import OnwerMainPage from '../../ownerpage/OnwerMainPage'
 // import Footer from '../../pages/Footer'
 // import AddPgForm from '../../ownerpage/AddPgForm'
-import { Outlet } from 'react-router-dom'
+import { Outlet, useLocation } from 'react-router-dom'
 
 const OnwerHome = () => {
+  const location=useLocation();
+  const isProfilePage = location.pathname === "/ownerDashbord/profile";
   return (
     <>
    <div>
@@ -14,7 +16,7 @@ const OnwerHome = () => {
       <OwnerHeader/>
       </div>
       <div className='ml-[200px]'>
-        <OwnerNavbar/>
+         {!isProfilePage && <OwnerNavbar />}
         <Outlet/>
         </div>
      </div>

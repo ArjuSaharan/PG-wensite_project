@@ -1,10 +1,7 @@
 import mongoose from "mongoose";
 
 const userSchema= new mongoose.Schema({
-    userId:{
-        type:mongoose.Types.ObjectId,
-        require:true,
-    },
+    
     name:{
         type:String,
         required:true,
@@ -16,10 +13,10 @@ const userSchema= new mongoose.Schema({
     },
     password:{
         type:String,
-        require:true,
+        required:true,
     }
 })
 
-const userLoginModel= mongoose.model("userlogin",userSchema);
+const userLoginModel= mongoose.model("userLogin",userSchema);
 
 export default userLoginModel;

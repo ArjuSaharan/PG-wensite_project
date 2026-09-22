@@ -1,5 +1,8 @@
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import axios from 'axios';
+import { AppConetxt } from '../../context/AppContext';
+import { toast } from 'react-toastify';
 
 const FilterSidebar = () => {
     const[serachParams,setserachParams]=useSearchParams();
@@ -7,37 +10,39 @@ const FilterSidebar = () => {
         category:"",
         gender:"",
         roomType:[],
-        material:[],
-        facilaties:[],
+        facilities:[],
         minprice:5000,
         maxprice:20000
     });
     const[priceRange,setPRiceRange]=useState([5000,20000]);
-      const navigate=useNavigate();
-    const categories=["Top wear","Bottom wear"];
-    const roomType=["single seater","double seater","three seater","four seater"];
-    const facilaties=["AC","Non ac","Laundary","Parking","food","houseKeeping"];
-    const gender=["Boys","Girls"];
+    const roomType=["Single seater","Double seater","Triple seater","Four seater"];
+    const facilities=[ "AC",
+          "Non-AC",
+          "WiFi",
+          "Food",
+          "Parking",
+          "Laundry",
+          "Housekeeping",
+          "Hot Water",];
+    const pgType=["Boys","Girls" ,"co-living"];
+
 
     useEffect(()=>{
-      const params=Object.fromEntries([...serachParams]);
+      const params=Object.fromEntries(serachParams);
       setfilters({
-        category:params.category || "",
         gender:params.gender || "",
-        // color:params.color || "",
          roomType:params.roomType ? params.roomType.split(",") :[],
-        // material:params.material ? params.material.split(",") :[],
-        facilaties:params.facilaties? params.facilaties.split(",") :[],
-        minprice:params.minprice || 5000,
-        maxprice:params.maxprice || 20000,
+        facilities:params.facilities? params.facilities.split(",") :[],
+        minprice:params.minprice || "",
+        maxprice:params.maxprice || "",
       })
 
-      setPRiceRange([5000,params.maxprice || 20000])
+      setPRiceRange(params.maxprice ? Number(params.maxprice): 20000)
     },[serachParams]);
 
     const handleFilterChange=(e)=>{
       const {name,value,checked,type}=e.target;
-      let newFilter={...filters};
+      const newFilter={...filters};
       if(type==="checkbox"){
         if(checked){
           newFilter[name]=[...(newFilter[name] || []),value];
@@ -50,31 +55,73 @@ const FilterSidebar = () => {
           newFilter[name]=value;
         }
         setfilters(newFilter);
+
         updateURLParams(newFilter);
             console.log({name,value,checked,type});
     }
+   
+    const updateURLParams = (newFilters) => {
 
-    const updateURLParams=(newFilter)=>{
-      const params=new URLSearchParams();
-      Object.keys(newFilter).forEach((key)=>{
-        if(Array.isArray(newFilter[key]) && newFilter[key].length>0){
-          params.append(key, newFilter[key].join(","));
+        const params = new URLSearchParams();
+
+        if (newFilters.gender) {
+            params.set(
+                "gender",
+                newFilters.gender
+            );
         }
-        else if(newFilter[key]){
-          params.append(key,newFilter[key]);
+
+        if (newFilters.roomType.length > 0) {
+            params.set(
+                "roomType",
+                newFilters.roomType.join(",")
+            );
         }
-      })
-      setserachParams(params);
-      navigate(`?${params.toString()}`)
-    }
+        if (newFilters.facilities.length > 0) {
+            params.set(
+                "facilities",
+                newFilters.facilities.join(",")
+            );
+        }
+        if (newFilters.minprice) {
+            params.set(
+                "minprice",
+                newFilters.minprice
+            );
+        }
+        if (newFilters.maxprice) {
+            params.set(
+                "maxprice",
+                newFilters.maxprice
+            );
+        }
+        console.log(
+            "NEW FILTER URL:",
+            params.toString()
+        );
+        setserachParams(params);
+    };
+
 
     const handlePricechange=(e)=>{
-      const newPrice=e.target.value;
-      setPRiceRange([5000,newPrice]);
+      const newPrice=Number(e.target.value);
+      setPRiceRange(newPrice);
       const newFilter={...filters,minprice:5000 ,maxprice:newPrice}
       setfilters(newFilter)
       updateURLParams(newFilter);
     }
+    const handleClearAll = () => {
+
+        setfilters({
+            gender: "",
+            roomType: [],
+            facilities: [],
+            minprice: "",
+            maxprice: ""
+        });
+        setPRiceRange(20000);
+        setserachParams({});
+    };
   return (
     <>
     <div className='p-4'>
@@ -83,29 +130,16 @@ const FilterSidebar = () => {
        {/* category filter */}
        <div className='mb-6'>
         <div className='flex justify-around items-center'>
-            <button className='text-white bg-violet-700 px-3 rounded '>clear all</button>
-            <button className='text-white bg-violet-700 px-3 rounded'>Apply</button>
+            <button onClick={handleClearAll}
+            className='text-white bg-violet-700 px-3 rounded '>clear all</button>
+            
         </div>
-        {/* <label className='block text-gray-600 font-medium mb-2'>Category</label>
-        {
-          categories.map((category)=>(
-            <div key={category} className='flex items-center mb-1'>
-              <input type="radio" name="category"
-              value={category}
-              onChange={handleFilterChange}
-              checked={filters.category ===category}
-               className='mr-2 h-4 w-4 text-blue-500 focus:ring-blue-400 border-gray-300'/>
-              <span className='text-gray-700'>{category}</span>
-              </div>
-          ))
-        } */}
-
        </div>
         {/* gender filter */}
        <div className='mb-6'>
-        <label className='block text-gray-600 font-medium mb-2'>Gender</label>
+        <label className='block text-gray-600 font-medium mb-2'>Pg Type</label>
         {
-          gender.map((gen)=>(
+          pgType.map((gen)=>(
             <div key={gen} className='flex items-center mb-1'>
               <input type="radio" name="gender"
               value={gen}
@@ -117,28 +151,9 @@ const FilterSidebar = () => {
           ))
         }
        </div>
-
-       {/* color section */}
-       {/* <div className='mb-6'>
-        <label className='block text-gray-600 font-medium mb-2'>Color</label>
-        <div className='flex flex-wrap gap-2'>
-          {
-            color.map((colors)=>(
-              <button key={colors}
-              name="color"
-              value={colors}
-              onClick={handleFilterChange}
-              className={`w-8 h-8 rounded-full border border-gray-300 cursor-pointer
-              hover:scale-105  ${filters.color ===colors ? "ring-3 ring-blue-500 border-gray-300" :""}`} style={{background:colors.toLocaleLowerCase()}}></button>
-            ))
-          }
-
-        </div> */}
-       {/* </div> */}
-
-       {/*size filter */}
+       {/*room type */}
       <div className='mb-6'>
-        <label className="block text-gray-600 font-medium mb-2">Size</label>
+        <label className="block text-gray-600 font-medium mb-2">Room Type</label>
         {
           roomType.map((val)=>(
             <div key={val} className='flex items-center mb-1'>
@@ -153,34 +168,16 @@ const FilterSidebar = () => {
         }
       </div>
 
-       {/*material filter */}
-      {/* <div className='mb-6'>
-        <label className="block text-gray-600 font-medium mb-2">Material</label>
-        {
-          material.map((val)=>(
-            <div key={val} className='flex items-center mb-1'>
-              <input type="checkbox" name="material"
-              value={val}
-              onChange={handleFilterChange}
-              checked={filters.material === val}
-              className='mr-2 h-4 w-4 text-blue-500 focus:ring-blue-400 border-gray-300'/>
-              <span className='text-gray-700'>{val}</span>
-              </div>
-          ))
-        }
-
-      </div> */}
-
-       {/*brand filter */}
+      </div>
       <div className='mb-6'>
-        <label className="block text-gray-600 font-medium mb-2">Brand</label>
+        <label className="block text-gray-600 font-medium mb-2 mx-3">Facilities</label>
         {
-          facilaties.map((val)=>(
-            <div key={val} className='flex items-center mb-1'>
-              <input type="checkbox" name="facilaties"
+          facilities.map((val)=>(
+            <div key={val} className='flex items-center mb-1 px-3'>
+              <input type="checkbox" name="facilities"
               value={val}
               onChange={handleFilterChange}
-              checked={filters.facilaties.includes(val)}
+              checked={filters.facilities.includes(val)}
               className='mr-2 h-4 w-4 text-blue-500 focus:ring-blue-400 border-gray-300'/>
               <span className='text-gray-700'>{val}</span>
               </div>
@@ -190,21 +187,19 @@ const FilterSidebar = () => {
       </div>
       {/* price range */}
       <div className='mb-8'>
-        <label className='block text-gray-600 font-medium mb-2'>Price Range</label>
+        <label className='block text-gray-600 font-medium mb-2 px-3'>Price Range</label>
         <input type="range" name="priceRange" min={5000} max={20000}
-        value={priceRange[1]}
+        value={priceRange}
         onChange={handlePricechange}
         className='w-full h-2 bg-gray-300 rounded-lg appearance-none cursor-pointer'/>
         <div className='flex justify-between text-gray-600 mt-2'>
           <span>$5000</span>
-          <span>${priceRange[1]}</span>
+          <span>${priceRange}</span>
 
         </div>
 
 
       </div>
-
-    </div>
     </>
   )
 }

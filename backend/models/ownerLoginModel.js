@@ -1,10 +1,5 @@
 import mongoose from "mongoose";
-
 const ownerSchema= new mongoose.Schema({
-    // userId:{
-    //     type:mongoose.Types.ObjectId,
-    //     required:true,
-    // },
     name:{
         type:String,
         required:true,
@@ -15,14 +10,14 @@ const ownerSchema= new mongoose.Schema({
     },
     phone:{
         type:Number,
-        maxLength:10,
+        match: /^[0-9]{10}$/,
         required:true,
     },
     password:{
         type:String,
         required:true,
     }
-})
+},{timestamps:true});
 
-const ownerLModel= mongoose.model("ownerLogin",ownerSchema);
+const ownerLModel= mongoose.model("Owner",ownerSchema);
 export default ownerLModel;
