@@ -1,12 +1,16 @@
-import React, { useContext, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { FaSearch } from "react-icons/fa";
 import { FaMapMarkerAlt } from "react-icons/fa";
 import { AppConetxt } from '../../context/AppContext';
 const UserNavbar = ({onSearch}) => {
   const[input,setinput]=useState("");
-  const {userData,getuserdata,isLoggedin}=useContext(AppConetxt);
+  const {user,loading}=useContext(AppConetxt);
+
+   if(loading){
+    return <div>Loading...</div>
+   }
   const handleSearch=()=>{
-     onSearch(input.trim().toLocaleLowerCase());
+     onSearch(input.trim().toLowerCase());
   }
 
   const handdleKeydown=(e)=>{
@@ -14,9 +18,9 @@ const UserNavbar = ({onSearch}) => {
       handleSearch();
     }
   }
-
 const handleinput=(e)=>{
   setinput(e.target.value);
+  handleSearch();
   console.log(input);
 }
   return (
@@ -43,14 +47,15 @@ const handleinput=(e)=>{
       </div>
 
       <div className='flex items-center gap-4 p-2'>
-        <div className='flex items-center gap-2'>
-          <img src="https://i.pinimg.com/736x/89/16/a0/8916a0bfc4e7b501af26ddca7c71d82d.jpg" alt="user"
-          className='h-10 w-10 rounded-full object-cover'/>
-          <div>
-            {isLoggedin && userData && <p className='text-sm font-semibold text-gray-900'>{userData.name}</p>}
-
-          </div>
-        </div>
+         {user && (
+                <div className='flex gap-2 '>
+                  <div className="w-10 h-10 rounded-full bg-violet-600 text-white flex items-center justify-center font-bold">
+                    {user.name?.charAt(0).toUpperCase()}
+                </div>
+                <p className='font-lg font-semibold py-2'>{user.name.toUpperCase()}</p>
+                </div>
+                
+            )}
       </div>
       </div>
   )

@@ -1,22 +1,25 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { MdLocationOn } from "react-icons/md";
 import { FaRupeeSign, FaImage } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-const AddPgForm = ({onPgCreated}) => {
+import { AppConetxt } from "../context/AppContext";
+import axios from "axios";
+import { toast } from "react-toastify";
+const AddPgForm = ({ onPgCreated }) => {
 
     const [formData, setFormData] = useState({
         pgName: "",
         address: "",
         city: "",
         rentPerMonth: "",
+        pgType: "",
         roomType: "",
         availability: "",
         facilities: [],
-        foodIncluded: "",
         description: "",
     });
-    const navigate=useNavigate();
-
+    const navigate = useNavigate();
+    const { backendUrl } = useContext(AppConetxt);
     const [images, setImages] = useState([]);
 
     // Handle input, textarea and radio buttons
@@ -63,7 +66,7 @@ const AddPgForm = ({onPgCreated}) => {
 
         setImages(selectedFiles);
     };
-    const handleNaviaget=()=>{
+    const handleNaviaget = () => {
         navigate('/ownerDashbord')
     }
 
@@ -79,7 +82,7 @@ const AddPgForm = ({onPgCreated}) => {
 
 
     // Submit form
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         if (images.length < 4) {
             alert("Please upload at least 4 images");
@@ -93,17 +96,62 @@ const AddPgForm = ({onPgCreated}) => {
             alert("Please select at least one facility");
             return;
         }
-        
-        const pgData={
-            ...formData, images:images,postedAt: new Date()
-        };
-        onPgCreated(pgData);
-        console.log("FORM DATA:", formData);
-        console.log("IMAGES:", images);
-        alert("PG listing created successfully!");
+
+        try {
+            const data = new FormData();
+            data.append("pgName", formData.pgName);
+            data.append("address", formData.address);
+            data.append("city", formData.city);
+            data.append("rentPerMonth", formData.rentPerMonth);
+            data.append("pgType", formData.pgType);
+            data.append("roomType", formData.roomType);
+            data.append("availability", formData.availability);
+            data.append("description", formData.description);
+
+            formData.facilities.forEach((facility) => {
+                data.append("facilities", facility);
+            })
+            images.forEach((image) => {
+                data.append("images", image);
+            })
+
+            console.log("sending pg to backend");
+            const response = await axios.post(backendUrl + '/pg/owners/addpg', data, {
+                withCredentials: true,
+            })
+            console.log("data", response.data);
+            if (response.data.success) {
+                toast.success("PG Listing created successfully");
+                if (onPgCreated) {
+                    onPgCreated(response.data.pg);
+                }
+                setFormData({
+                    pgName: "",
+                    address: "",
+                    city: "",
+                    rentPerMonth: "",
+                    pgType: "",
+                    roomType: "",
+                    availability: "",
+                    facilities: [],
+                    foodIncluded: "",
+                    description: ""
+                })
+                setImages([]);
+                navigate("/ownerDashbord");
+            }
+            else{
+                toast.error(response.data.message);
+            }
+        }
+        catch (error) {
+            console.log(error);
+            toast.error(
+                 error.response?.data?.message ||
+            "Failed to create PG"
+            )
+        }
     };
-
-
     return (
 
         <div className="min-h-screen bg-gray-50 py-8 px-4">
@@ -154,7 +202,7 @@ const AddPgForm = ({onPgCreated}) => {
                                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                                     Full Address
                                 </label>
-                             <div className="relative">
+                                <div className="relative">
 
                                     <MdLocationOn className="absolute left-3 top-3.5 text-gray-500 text-xl" />
 
@@ -206,22 +254,51 @@ const AddPgForm = ({onPgCreated}) => {
                             </div>
                         </div>
                     </div>
-
+                    {/* pg type */}
+                    <div>
+                        <h2 className="text-xl font-bold text-gray-900 mb-4">
+                            PG Type
+                        </h2>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            {["Boys PG","Girls PG","Co-living"].map((type) => (
+                                <label
+                                    key={type}
+                                    className={`border rounded-lg p-4 cursor-pointer flex items-center gap-3
+                                    ${formData.pgType === type
+                                            ? "border-violet-600 bg-violet-50"
+                                            : "border-gray-300"
+                                        }`}
+                                >
+                                    <input
+                                        type="radio"
+                                        name="pgType"
+                                        value={type}
+                                        checked={formData.pgType === type}
+                                        onChange={handleChange}
+                                        required
+                                        className="accent-violet-600"
+                                    />
+                                    <span className="font-medium">
+                                        {type}
+                                    </span>
+                                </label>
+                            ))}
+                        </div>
+                    </div>
                     {/* ================= ROOM TYPE ================= */}
                     <div>
                         <h2 className="text-xl font-bold text-gray-900 mb-4">
                             Room Type
                         </h2>
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                            {["Single", "Double", "Triple"].map((type) => (
+                            {["Single seater", "Double seater", "Triple seater", "Four seater"].map((type) => (
                                 <label
                                     key={type}
                                     className={`border rounded-lg p-4 cursor-pointer flex items-center gap-3
-                                    ${
-                                        formData.roomType === type
+                                    ${formData.roomType === type
                                             ? "border-violet-600 bg-violet-50"
                                             : "border-gray-300"
-                                    }`}
+                                        }`}
                                 >
                                     <input
                                         type="radio"
@@ -251,11 +328,10 @@ const AddPgForm = ({onPgCreated}) => {
                                     <label
                                         key={status}
                                         className={`border rounded-lg px-5 py-3 cursor-pointer flex items-center gap-3
-                                        ${
-                                            formData.availability === status
+                                        ${formData.availability === status
                                                 ? "border-violet-600 bg-violet-50"
                                                 : "border-gray-300"
-                                        }`}
+                                            }`}
                                     >
 
                                         <input
@@ -278,9 +354,7 @@ const AddPgForm = ({onPgCreated}) => {
                         </div>
                     </div>
                     {/* ================= FACILITIES ================= */}
-
                     <div>
-
                         <h2 className="text-xl font-bold text-gray-900 mb-4">
                             Facilities
                         </h2>
@@ -298,14 +372,13 @@ const AddPgForm = ({onPgCreated}) => {
                                 "Hot Water"
                             ].map((facility) => (
 
-                              <label
+                                <label
                                     key={facility}
                                     className={`border rounded-lg p-3 cursor-pointer flex items-center gap-3
-                                    ${
-                                        formData.facilities.includes(facility)
+                                    ${formData.facilities.includes(facility)
                                             ? "border-violet-600 bg-violet-50"
                                             : "border-gray-300"
-                                    }`}
+                                        }`}
                                 >
                                     <input
                                         type="checkbox"
@@ -323,46 +396,6 @@ const AddPgForm = ({onPgCreated}) => {
                             ))}
                         </div>
                     </div>
-
-                    {/* ================= FOOD ================= */}
-
-                    {/* <div>
-
-                        <h2 className="text-xl font-bold text-gray-900 mb-4">
-                            Food Included
-                        </h2>
-
-                        <div className="flex gap-4">
-
-                            {["Yes", "No"].map((option) => (
-
-                                <label
-                                    key={option}
-                                    className={`border rounded-lg px-6 py-3 cursor-pointer flex items-center gap-3
-                                    ${
-                                        formData.foodIncluded === option
-                                            ? "border-violet-600 bg-violet-50"
-                                            : "border-gray-300"
-                                    }`}
-                                >
-                                    <input
-                                        type="radio"
-                                        name="foodIncluded"
-                                        value={option}
-                                        checked={
-                                            formData.foodIncluded === option
-                                        }
-                                        onChange={handleChange}
-                                        required
-                                        className="accent-violet-600"
-                                    />
-                                    {option}
-                                </label>
-                            ))}
-                        </div>
-                    </div> */}
-                    {/* ================= DESCRIPTION ================= */}
-
                     <div>
 
                         <h2 className="text-xl font-bold text-gray-900 mb-4">
@@ -428,7 +461,7 @@ const AddPgForm = ({onPgCreated}) => {
                                         key={index}
                                         className="relative group"
                                     >
-                                       <img
+                                        <img
                                             src={URL.createObjectURL(image)}
                                             alt={`PG ${index + 1}`}
                                             className="h-30 object-cover rounded-lg"
@@ -450,7 +483,7 @@ const AddPgForm = ({onPgCreated}) => {
                                     </div>
                                 ))}
                             </div>
-                      )}
+                        )}
 
                     </div>
 
@@ -458,8 +491,8 @@ const AddPgForm = ({onPgCreated}) => {
                     <div className="border-t pt-6 flex justify-end">
 
                         <button
-                    
-                        //   onClick={[handleChange,handleNaviaget]}
+
+                            //   onClick={[handleChange,handleNaviaget]}
                             type="submit"
                             className="bg-violet-700 hover:bg-violet-800 text-white font-bold px-8 py-3 rounded-lg transition"
                         >

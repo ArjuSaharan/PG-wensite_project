@@ -8,10 +8,12 @@ import bcrypt from "bcryptjs";
 // login 
 export const ownerregister=async(req,res)=>{
     const {name,email,phone,password,confirmPassword}=req.body;
+    console.log(req.body);
     if(!name || !email || !phone || !password ||!confirmPassword){
         return res.json({success:false,message:"fill the complete required details"});
     }
     try{
+        console.log(req.body);
         const emailExist=await ownerLModel.findOne({email});
         if(emailExist){
             return res.json({success:false,message:"email is already registered"});
@@ -25,17 +27,15 @@ export const ownerregister=async(req,res)=>{
             password:hashpassword,
         })
         await user.save();
-
-        const token=jwt.sign({id:user._id},process.env.JWT_SECRET,{expiresIn:'5d'});
+        const token=jwt.sign({id:user._id,role:"owner"},process.env.JWT_SECRET,{expiresIn:'5d'});
         res.cookie("token",token,{
             httpOnly:true,
-            secure:process.env.JWT_SECRET,
-            sameSite:'strict',
+            secure:false,
+            sameSite:'lax',
             maxAge:5 * 24* 60 *60 *1000,
         })
-
         return res.json({success:true,message:"register successfully"});
-
+        console.log("registerd: ",req.body);
     }
     catch(error){
         return res.json({success:false,message:error.message});
@@ -55,18 +55,17 @@ export const ownerLogin=async (req,res)=>{
             return res.json({success:false,message:"password incorrect"});
         }
 
-        const token=jwt.sign({id:user._id},process.env.JWT_SECRET,{expiresIn:'5d'});
-
+        const token=jwt.sign({id:user._id,
+            role:"owner"
+        },process.env.JWT_SECRET,{expiresIn:'5d'});
         res.cookie("token",token,{
             httpOnly:true,
-            secure:process.env.JWT_SECRET,
-            sameSite:'strict',
+            secure:false,
+            sameSite:'lax',
             maxAge:5 * 24* 60 *60 *1000,
         })
 
         return res.json({success:true,message:"login successfully"});
-
-
     }
     catch(error){
         return res.json({success:false,message:error.message});
@@ -78,12 +77,13 @@ export const ownerLogout=async(req,res)=>{
     try{
         res.clearCookie("token",{
             httpOnly:true,
-            secure:process.env.JWT_SECRET,
-            sameSite:'strict',
+            secure:false,
+            sameSite:'lax',
         })
         res.json({success:true,message:"logout successfully"});
     }
     catch(error){
         return res.json({success:false,message:error.message});
     }
+    
 }

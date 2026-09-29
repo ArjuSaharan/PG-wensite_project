@@ -9,6 +9,7 @@ import cookieParser from 'cookie-parser';
 // user register
 export const userregister = async (req, res) => {
     const { name, email, password } = req.body;
+    console.log("register", req.body);
     try {
         if (!name || !email || !password) {
             return res.json({ success: false, message: "please fill required detail complete" });
@@ -19,15 +20,17 @@ export const userregister = async (req, res) => {
         }
         const hashpassword = await bcrypt.hash(password, 10);
         const user = await userLoginModel({
-            name, email, password:hashpassword
+            name, email, password: hashpassword
         })
         await user.save();
         // create token 
-        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '5d' });
+        const token = jwt.sign({ id: user._id ,
+            role:"user"
+        }, process.env.JWT_SECRET, { expiresIn: '5d' });
         res.cookie("token", token, {
             httpOnly: true,
             secure: false,
-            sameSite: 'strict',
+            sameSite: 'lax',
             maxAge: 5 * 24 * 60 * 60 * 1000,
         })
 
@@ -43,6 +46,7 @@ export const userregister = async (req, res) => {
 // user login
 export const userLogin = async (req, res) => {
     const { email, password } = req.body;
+    console.log("req,body ", req.body);
     if (!email || !password) {
         return res.json({ success: false, message: "please fill the required details" });
     }
@@ -59,12 +63,12 @@ export const userLogin = async (req, res) => {
                 message: "Password is incorrect"
             });
         }
-        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '5d' });
+        const token = jwt.sign({ id: user._id ,role:"user"}, process.env.JWT_SECRET, { expiresIn: '5d' });
 
         res.cookie("token", token, {
             httpOnly: true,
-            secure:false,
-            sameSite: 'strict',
+            secure: false,
+            sameSite: 'lax',
             maxAge: 5 * 24 * 60 * 60 * 1000,
         })
         return res.json({ success: true, message: "login successfully" });
@@ -83,7 +87,7 @@ export const userLogout = async (req, res) => {
         res.clearCookie("token", {
             httpOnly: true,
             secure: false,
-            sameSite: 'strict',
+            sameSite: 'lax',
         })
 
         return res.json({ success: true, message: "logout successfully" });

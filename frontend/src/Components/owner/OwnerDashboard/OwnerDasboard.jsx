@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import OnwerMainPage from "../../../ownerpage/OnwerMainPage";
 import AddPgForm from "../../../ownerpage/AddPgForm";
+import OwnerProfile from "../../../ownerpage/OwnerProfile";
 
 const OwnerDashboard = () => {
 

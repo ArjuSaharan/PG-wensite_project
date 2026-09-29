@@ -1,23 +1,61 @@
-import jwt from 'jsonwebtoken'
-import "dotenv/config"
+import jwt from "jsonwebtoken";
+import "dotenv/config";
 
-const userAuth=async(req,res,next)=>{
-    console.log("cookies");
-    const {token}=req.cookies;
-    if(!token){
-        return res.json({success:false,message:"not authorizes"});
-    }
-    try{
-        const tokenDecode=jwt.verify(token,process.env.JWT_SECRET);
-        if(!tokenDecode){
-            return res.json({success:false,message:"invalid token"})
+const auth = async (req, res, next) => {
+
+    try {
+
+        console.log("AUTH COOKIES:", req.cookies);
+
+        const { token } = req.cookies;
+
+        if (!token) {
+
+            return res.status(401).json({
+                success: false,
+                message: "Not authenticated"
+            });
         }
-        req.userId=tokenDecode.id;
-        next();
-    }
-    catch(error){
-        return res.json({success:false,message:error.message});
-    }
-}
 
-export default userAuth;
+        const decoded = jwt.verify(
+            token,
+            process.env.JWT_SECRET
+        );
+
+        console.log("AUTH DECODED:", decoded);
+
+        req.role = decoded.role;
+
+        if (decoded.role === "user") {
+
+            req.userId = decoded.id;
+
+        } else if (decoded.role === "owner") {
+
+            req.ownerId = decoded.id;
+
+        } else {
+
+            return res.status(403).json({
+                success: false,
+                message: "Invalid role"
+            });
+        }
+
+        next();
+
+    } catch (error) {
+
+        console.log(
+            "AUTH ERROR:",
+            error.message
+        );
+
+        return res.status(401).json({
+            success: false,
+            message: "Token expired or invalid"
+        });
+    }
+};
+
+export default auth;
