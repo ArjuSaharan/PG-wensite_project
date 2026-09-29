@@ -2,7 +2,7 @@ import ownerLModel from "./ownerLoginModel.js";
 
 export const getownerdata=async(req,res)=>{
     try{
-         const user=await ownerLModel.findById(req.userId);
+         const user=await ownerLModel.findById(req.ownerId);
         if(!user){
             return res.json({success:false,message:"uer not found"});
         }

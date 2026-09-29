@@ -3,7 +3,7 @@ import cookieParser from 'cookie-parser';
 import connectDb from './config/mongodb.js';
 import userRoutes from './router/userRoutes.js';
 import ownerRoutes from './router/ownerRoutes.js'
-import userDataRoute from './router/userRoutes.js'
+import userDataRoute from './router/userdataRoute.js'
 import pgRoutes from './router/pgRoutes.js'
 import filterroutes from './router/filterRoutes.js'
 // import testRoutes from './router/testRoutes.js'

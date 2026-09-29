@@ -1,6 +1,6 @@
 import React, { useContext } from 'react'
 import { AppConetxt } from '../../context/AppContext'
-import { Navigate,Outlet } from 'react-router-dom';
+import { Navigate, Outlet } from 'react-router-dom';
 
 const ProtectedUserRoute = () => {
     const { user, loading } = useContext(AppConetxt);
@@ -11,10 +11,10 @@ const ProtectedUserRoute = () => {
             </div>
         );
     }
-    if(!user){
-        return <Navigate to="/login" replace/>
+    if (!user) {
+        return <Navigate to="/login" replace />
     }
-    return <Outlet/>
+    return <Outlet />
 }
 
 export default ProtectedUserRoute

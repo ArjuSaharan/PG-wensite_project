@@ -34,7 +34,7 @@ export const AppContextProvider = (props) => {
                 withCredentials: true,
             })
             if (data.success) {
-                setownerData(data.ownerdata);
+                setownerData(data.ownerData);
             }
         }
         catch (error) {

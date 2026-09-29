@@ -16,11 +16,12 @@ const OwnerHeader = () => {
   const navigate=useNavigate();
  const {
     backendUrl,
-    isLoggedin,
     setisLoggin,
     owner,
-    setowner
+    ownerdata,
 } = useContext(AppConetxt);
+
+ const ownerName = owner?.name || ownerdata?.name || "";
 console.log("OWNER IN HEADER:", owner);
  const [unreadCount,setUnreadCount]=useState(0);
 
@@ -124,7 +125,7 @@ console.log("OWNER IN HEADER:", owner);
          <Link to='profile'
          className='flex items-center gap-1 p-2 hover:bg-violet-100 hover:rounded-full cursor-pointer'>
           <div className="h-10 w-10 rounded-full bg-violet-500 text-white flex items-center justify-center font-bold text-lg">
-              {owner?.name?.charAt(0).toUpperCase() || "O"}</div>
+              {ownerName.charAt(0).toUpperCase() || "O"}</div>
           <h4 className='text-gray-800 font-bold'>Profile</h4>
         </Link>
         </div>

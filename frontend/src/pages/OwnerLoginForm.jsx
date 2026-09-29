@@ -18,8 +18,7 @@ const OwnerLoginForm = () => {
         password: "",
         confirmPassword: ""
     })
-    const { backendUrl, getuserdata, isLoggedin, setisLoggin
-        , ownerdata, setownerData, getownerdata,setowner } = useContext(AppConetxt);
+    const { backendUrl, setisLoggin, checkAuth } = useContext(AppConetxt);
     const handleChange = (e) => {
         setformdata({
             ...formdata,
@@ -31,47 +30,44 @@ const OwnerLoginForm = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-       if(state==='Sign up'){
-         try {
-            const { data } = await axios.post(backendUrl + "/pg/owner/register", {
-                name: formdata.fullName,
-                email: formdata.email,
-                phone: formdata.phone,
-                password: formdata.password,
-                confirmPassword: formdata.confirmPassword
-            }, { withCredentials: true });
-            console.log(data);
-            if (data.success) {
-                setowner(data.success);
-                toast.success(data.message);
-                  await getownerdata();
-                setisLoggin(true),
-              
-                navigate('/ownerDashbord',{replace:true})
+        if (state === 'Sign up') {
+            try {
+                const { data } = await axios.post(backendUrl + "/pg/owner/register", {
+                    name: formdata.fullName,
+                    email: formdata.email,
+                    phone: formdata.phone,
+                    password: formdata.password,
+                    confirmPassword: formdata.confirmPassword
+                }, { withCredentials: true });
+                console.log(data);
+                if (data.success) {
+                    toast.success(data.message);
+                    await checkAuth();
+                    setisLoggin(true);
+                    navigate('/ownerDashbord', { replace: true });
+                }
+            }
+            catch (error) {
+                toast.error(error.message);
             }
         }
-        catch (error) {
-            toast.error(error.message);
+        else {
+            try {
+                const { data } = await axios.post(backendUrl + '/pg/owner/login', {
+                    email: formdata.email,
+                    password: formdata.password,
+                }, { withCredentials: true });
+                if (data.success) {
+                    toast.success(data.message);
+                    await checkAuth();
+                    setisLoggin(true);
+                    navigate('/ownerDashbord', { replace: true });
+                }
+            }
+            catch (error) {
+                toast.error(error.message);
+            }
         }
-       }
-       else{
-        try{
-            const {data}=await axios.post(backendUrl+'/pg/owner/login',{
-             email: formdata.email,
-            password: formdata.password,
-        },{withCredentials:true});
-        if(data.success){
-            toast.success(data.message);
-            setowner(data.success);
-            setisLoggin(true);
-            getownerdata();
-            navigate('/ownerDashbord',{replace:true})
-        }
-        }
-        catch(error){
-            toast.error(error.message);
-        }
-       }
 
     }
 
